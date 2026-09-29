@@ -1,0 +1,14 @@
+# environment.yml
+name: diplo-ia
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - ipython
+  - numpy
+  - matplotlib
+  - scipy
+  - pandas
+  - jupyter
+  - jupyterlab-git

@@ -1,6 +1,43 @@
 # Diplomatura ID e IA de IB
 
-## Clase 1 
+## Programa
+
+### Clase 1
+
+  - Control de versiones
+  - Instalación de `Python`
+  - Ambientes
+  - Conceptos básicos de `Python`
+  - Uso de `Python`
+
+### Clase 2
+  - Tipos de datos
+  - Modularización
+  - Tipos contenedores
+
+### Clase 3
+  - Control de flujo
+  - Funciones
+  - Persistencia de datos
+  - Programación Orientada a Objetos
+
+### Clase 4
+  - Continuación de Programación con objetos
+  - Errores y Excepciones
+  - Introducción a Numpy
+  - Más información sobre `Numpy`
+  - Visualización
+
+### Clase 5
+  - Introducción a `pandas`
+  - Estructuras de datos en `pandas`: Series
+  - Ejercicios
+  - Estructuras de datos en `pandas`: `DataFrame`s
+  - Funciones y decoradores
+  - `Enum` y `dataclass`es
+
+
+## Instrucciones primera clase
 
 ### Primeros pasos
 
@@ -78,3 +115,4 @@ Alternativamente, se puede crear un environment vacío e instalar los paquetes n
 
 - Apretar las teclas Ctrl+Shift+P (para ir a la línea de comandos) y escribir "Seleccionar Intérprete" (Select Interpreter)
 	- Elegir el ejecutable Python del environment creado: "diplo-ia".
+

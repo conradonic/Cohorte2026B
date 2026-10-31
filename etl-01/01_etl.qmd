@@ -1,0 +1,767 @@
+---
+title: "Introducción a procesos ETL"
+subtitle: "Clase 1"
+author: "Diplomatura en Ingeniería de Datos e IA - Instituto Balseiro"
+title-slide-attributes:
+  data-background-image: ETL.jpg
+  data-background-size: contain
+  data-background-position: right
+  data-background-color: "#002b36"
+format:
+  revealjs:
+    include-in-header:
+      text: |
+        <style>
+        #title-slide { text-align: left; width: 50%; }
+        #title-slide .title, #title-slide .subtitle, #title-slide .quarto-title-author-name {
+          color: #fdf6e3;
+          text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+        }
+        </style>
+execute:
+  echo: false
+---
+
+# Fundamentos de ciencia de datos y procesos ETL
+
+```{mermaid}
+flowchart LR
+    A[Fuentes de datos] --> B[Extracción]
+    B --> C[Consolidación]
+    C --> D[Transformación]
+    D --> E[Validación]
+    E --> F[Carga]
+    F --> G[Análisis posterior]
+```
+
+---
+
+## 
+
+
+La ciencia de datos es un proceso, no una herramienta.
+
+Empieza con una pregunta:
+
+> ¿Qué queremos saber, decidir, explicar o predecir?
+
+
+
+---
+
+## Ejemplos 
+
+- ¿Qué productos se venden juntos?
+- ¿Qué clientes abandonan un servicio?
+- ¿Qué pacientes faltan a sus turnos?
+- ¿Qué zonas tienen mayor demanda?
+- ¿Qué errores aparecen más frecuentemente en un sistema?
+- ¿Qué indicadores anticipan una caída de ventas?
+
+---
+
+## 2. Alcance de la ciencia de datos
+
+La ciencia de datos puede verse como una intersección entre varias áreas:
+
+```{mermaid}
+graph LR
+    A[Problema del dominio] --> DS((Ciencia de Datos))
+    B[Datos disponibles] --> DS
+    C[Estadística / análisis] --> DS
+    D[Computación] --> DS
+    E[Comunicación de resultados] --> DS
+```
+
+No alcanza con saber programar. Tampoco alcanza con saber estadística. Hace falta comprender el **problema** y el **contexto**.
+
+---
+
+### Qué puede hacer la ciencia de datos
+
+Puede ayudar a:
+
+- Describir lo que pasó.
+- Detectar patrones.
+- Medir indicadores.
+- Encontrar anomalías.
+- Comparar grupos.
+- Predecir comportamientos.
+- Recomendar acciones.
+- Automatizar decisiones repetitivas.
+
+---
+
+### Niveles de análisis
+
+```{mermaid}
+flowchart LR
+    A[Descriptivo] --> B[Diagnóstico]
+    B --> C[Predictivo]
+    C --> D[Prescriptivo]
+```
+
+Ventas
+
+| Nivel        | Pregunta                           |
+| ------------ | ---------------------------------- |
+| Descriptivo  | ¿Cuánto vendimos este mes?         |
+| Diagnóstico  | ¿Por qué bajaron las ventas?       |
+| Predictivo   | ¿Cuánto venderemos el mes próximo? |
+| Prescriptivo | ¿Qué promociones conviene lanzar?  |
+
+---
+
+Salud
+
+| Nivel        | Pregunta                                    |
+| ------------ | ------------------------------------------- |
+| Descriptivo  | ¿Cuántas consultas se atendieron?           |
+| Diagnóstico  | ¿Por qué aumentaron las demoras?            |
+| Predictivo   | ¿Qué pacientes tienen más riesgo de faltar? |
+| Prescriptivo | ¿A quién conviene enviar recordatorio?      |
+
+---
+
+## Fases de un proyecto de ciencia de datos
+
+
+1. Definición del problema
+2. Recolección de datos
+3. Exploración inicial
+4. Limpieza y transformación
+5. Análisis o modelado
+6. Evaluación
+7. Comunicación
+8. Puesta en producción o uso operativo
+9. Monitoreo
+
+
+---
+
+### 1. Definición del problema
+
+Antes de tocar los datos hay que entender:
+
+- ¿Cuál es la pregunta?
+- ¿Quién necesita la respuesta?
+- ¿Qué decisión se va a tomar?
+- ¿Qué datos existen?
+- ¿Qué restricciones hay?
+- ¿Qué significa que el resultado sea útil?
+
+---
+
+### Ejemplo:
+
+No es lo mismo decir:
+
+> “Queremos analizar clientes.”
+
+que decir:
+
+> “Queremos identificar clientes con alta probabilidad de abandonar el servicio durante los próximos 30 días, para intervenirlos con una campaña de retención.”
+
+La segunda formulación permite definir datos, métricas y acciones.
+
+---
+
+### 2. Recolección de datos
+
+- Planillas Excel.
+- Archivos CSV.
+- APIs.
+- Bases de datos.
+- Formularios.
+- Sistemas administrativos.
+- Sensores.
+- Logs.
+- Documentos.
+- Imágenes.
+- Audio.
+- Texto libre.
+
+---
+
+### 2. Recolección de datos
+
+En esta etapa aparece la primera pregunta práctica:
+
+> ¿Dónde están los datos y cómo accedo a ellos?
+
+---
+
+### 3. Exploración inicial
+
+Antes de transformar datos conviene **mirarlos**.
+
+Preguntas típicas:
+
+- ¿Cuántas filas hay?
+- ¿Cuántas columnas?
+- ¿Qué representa cada columna?
+- ¿Qué tipos de datos hay?
+- ¿Hay valores faltantes?
+- ¿Hay duplicados?
+- ¿Hay valores imposibles?
+- ¿Hay fechas mal cargadas?
+- ¿Hay unidades mezcladas?
+
+---
+
+En Python/Pandas esto después se traduce en:
+
+```python
+df.head()
+df.info()
+df.describe()
+df.isna().sum()
+df.duplicated().sum()
+df["columna"].value_counts()
+```
+
+---
+
+### 4. Limpieza y transformación
+
+
+- Renombrar columnas.
+- Convertir tipos de datos.
+- Corregir fechas.
+- Eliminar duplicados.
+- Manejar datos faltantes.
+
+--- 
+
+### 
+- Unificar categorías.
+- Normalizar unidades.
+- Corregir errores de carga.
+- Filtrar registros inválidos.
+- Crear nuevas columnas.
+- Unir tablas.
+
+>  La limpieza y transformación es la parte más importante, aunque menos glamorosa, de la ciencia de datos.
+
+---
+
+Ejemplo:
+
+```text
+"Bariloche", "S. C. de Bariloche", "San Carlos Bariloche"
+```
+
+Todas podrían representar la misma ciudad, pero para la computadora son tres valores distintos.
+
+---
+
+### 5. Análisis o modelado
+
+Recién acá entran los análisis más visibles:
+
+- Tablas resumen.
+- Gráficos.
+- Indicadores.
+- Correlaciones.
+- Segmentaciones.
+
+---
+
+### ...
+- Modelos predictivos.
+- Sistemas de recomendación.
+- Clasificadores.
+- Detección de anomalías.
+
+> Pero **la calidad** del análisis depende directamente de **la calidad** del dato preparado.
+
+---
+
+### 6. Evaluación
+
+Hay que evaluar si el resultado sirve.
+
+En un análisis descriptivo:
+
+- ¿Los números tienen sentido?
+- ¿Coinciden con otras fuentes?
+- ¿Hay sesgos?
+- ¿Hay datos incompletos?
+
+---
+
+### En un modelo predictivo:
+
+- ¿Predice bien?
+- ¿Con qué métrica?
+- ¿Funciona igual en distintos grupos?
+- ¿Tiene errores aceptables?
+- ¿Se puede explicar?
+
+---
+
+### 7. Comunicación
+
+Los resultados deben comunicarse según la audiencia.
+
+No es lo mismo hablarle a:
+
+- Un equipo técnico.
+- Una gerencia.
+- Un cliente.
+- Un equipo médico.
+- Un usuario final.
+
+---
+
+###
+
+La comunicación puede tomar la forma de:
+
+- Reporte.
+- Dashboard.
+- Presentación.
+- Notebook.
+- API.
+- Aplicación.
+- Alerta automática.
+
+---
+
+### 8. Puesta en producción
+
+Un análisis puede quedar como informe, pero también puede transformarse en un proceso operativo.
+
+Ejemplos:
+
+- Un dashboard que se actualiza todos los días.
+- Un pipeline ETL automático.
+- Un modelo que predice demanda.
+- Una alerta cuando aparece un valor anómalo.
+- Un sistema que recomienda productos.
+
+---
+
+### 9. Monitoreo
+
+Cuando los procesos pasan a producción, hay que monitorearlos.
+
+- ¿Llegaron los datos de hoy?
+- ¿Falló alguna fuente?
+- ¿Cambió el formato del archivo?
+- ¿Aparecieron valores inesperados?
+- ¿El modelo sigue funcionando bien?
+- ¿Las métricas cambiaron?
+
+Esto introduce la idea de que ciencia de datos no es solamente análisis puntual, sino también sistemas vivos.
+
+---
+
+## Diferencias entre arquitectura, ingeniería y ciencia de datos
+
+---
+
+### Arquitectura de datos
+
+La arquitectura define el diseño general del ecosistema.
+
+Se pregunta:
+
+- ¿Dónde viven los datos?
+- ¿Cómo se conectan los sistemas?
+- ¿Qué repositorios se usan?
+- ¿Qué datos son sensibles?
+- ¿Quién puede acceder?
+- ¿Cómo se escala?
+- ¿Cómo se gobiernan los datos?
+
+---
+
+Ejemplo:
+
+Una organización decide tener:
+
+```{mermaid}
+flowchart LR
+    A[Sistema transaccional] --> B[ETL diario]
+    B --> C[(Data warehouse)]
+    C --> D[Dashboards y análisis]
+```
+
+---
+
+O bien:
+
+```{mermaid}
+flowchart LR
+    A[Aplicaciones + APIs + archivos] --> B[(Data lake)]
+    B --> C[Procesamiento con Python]
+    C --> D[(Data warehouse o modelos)]
+```
+
+La arquitectura no necesariamente programa cada proceso, pero define el mapa.
+
+---
+
+### Ingeniería de datos
+
+La ingeniería construye y mantiene los flujos de datos.
+
+Se ocupa de:
+
+- Extraer datos.
+- Automatizar procesos.
+- Transformar datos.
+- Controlar errores.
+- Crear pipelines.
+- Optimizar cargas.
+- Mantener disponibilidad.
+- Documentar flujos.
+
+---
+
+Ejemplo:
+
+Un ingeniero de datos arma un proceso que:
+
+```{mermaid}
+flowchart
+    A[Lee ventas.csv] --> B[Valida columnas]
+    B --> C[Limpia registros]
+    C --> D[Une con clientes.csv]
+    D --> E[Carga ventas_limpias en base]
+    E --> F[Genera logs]
+    F --> G[Notifica errores]
+```
+
+---
+
+### Ciencia de datos
+
+La ciencia de datos usa los datos para responder preguntas.
+
+Se ocupa de:
+
+- Explorar datos.
+- Formular hipótesis.
+- Calcular indicadores.
+- Visualizar resultados.
+- Entrenar modelos.
+- Interpretar resultados.
+- Comunicar hallazgos.
+
+---
+
+Ejemplo:
+
+Con la tabla `ventas_limpias`, un científico de datos analiza:
+
+- Productos más vendidos.
+- Estacionalidad.
+- Segmentos de clientes.
+- Predicción de demanda.
+- Recomendación de productos complementarios.
+
+---
+
+### 
+
+> La arquitectura diseña el sistema de datos.
+> La ingeniería hace que los datos lleguen limpios y confiables.
+> La ciencia de datos usa esos datos para producir conocimiento o predicciones.
+
+---
+
+## Herramientas utilizadas
+
+---
+
+#### Opción 1: Anaconda (miniconda)
+
+Ventajas:
+
+- Fácil para principiantes.
+- Incluye Jupyter.
+- Maneja entornos.
+- Viene con muchas librerías.
+
+Desventajas:
+
+- Pesado.
+- A veces confunde con entornos múltiples.
+
+---
+
+#### Opción 2: Python + (`venv` + `pip`) o `poetry` o `uv`
+
+Ventajas:
+
+- Más liviano.
+- Más estándar para desarrollo.
+- Menos dependencia de Anaconda.
+
+Desventajas:
+
+- Requiere más manejo de terminal.
+
+---
+
+#### Opción 3: Google Colab
+
+Ventajas:
+
+- No requiere instalación local.
+- Funciona desde navegador.
+- Bueno para evitar problemas de setup.
+
+Desventajas:
+
+- Depende de internet.
+- Menos control del entorno.
+- Manejo de archivos diferente.
+
+
+---
+
+## Fases de un proyecto de ciencia de datos
+
+1. Definición del problema
+2. Recolección de datos
+3. **Exploración inicial**
+4. **Limpieza y transformación**
+5. Análisis o modelado
+6. Evaluación
+7. Comunicación
+8. Puesta en producción o uso operativo
+9. Monitoreo
+
+---
+
+## Conceptos de ETL
+
+### Definición
+
+ETL significa:
+
+```{mermaid}
+flowchart LR
+    E[Extract / Extraer] --> T[Transform / Transformar]
+    T --> L[Load / Cargar]
+```
+
+Es el proceso mediante el cual se toman datos desde una o varias fuentes, se los prepara y se los carga en un destino.
+
+### Idea central
+
+> ETL convierte datos crudos en datos utilizables.
+
+---
+
+## 7. Extract: extracción de datos
+
+Extraer significa obtener datos desde una fuente.
+
+Fuentes frecuentes:
+
+```text
+Archivos CSV
+Archivos Excel
+JSON
+TXT
+YAML
+Bases de datos
+APIs
+Logs
+Formularios web
+Sistemas administrativos
+```
+
+---
+
+Ejemplo básico:
+
+```text
+ventas.csv
+clientes.csv
+productos.json
+cotizacion_dolar_api
+```
+
+---
+
+Preguntas importantes:
+
+- ¿Dónde están los datos?
+- ¿En qué formato vienen?
+- ¿Con qué frecuencia se actualizan?
+- ¿Quién los genera?
+- ¿Son confiables?
+- ¿Están completos?
+- ¿Hay permisos para usarlos?
+
+---
+
+## 8. Transform: transformación de datos
+
+Llevar los datos a un estado más útil y confiable. Operaciones típicas:
+
+- Cambiar nombres de columnas.
+- Convertir tipos.
+- Estandarizar formatos.
+- Corregir inconsistencias.
+- Eliminar duplicados.
+- Validar reglas.
+- Unir fuentes.
+- Agregar información.
+- Calcular nuevas variables.
+
+---
+
+Ejemplo:
+
+A partir de:
+
+| fecha    | cliente | producto | cant | precio |
+| -------- | ------- | -------- | ---: | -----: |
+| 13/06/26 | ana     | mouse    |    2 |  15 |
+| 07-26-2026 | Juan    | Teclado  |    1 |  50 $ |
+
+Transformar a:
+
+| fecha      | cliente | producto | cantidad | precio_unitario | total |
+| ---------- | ------- | -------- | -------: | --------------: | ----: |
+| 2026-06-13 | Ana     | Mouse    |        2 |           15 | 30 |
+| 2026-07-26 | Juan    | Teclado  |        1 |           50 | 50 |
+---
+
+## Load: carga de datos
+
+Cargar significa guardar los datos transformados en un destino.
+
+Destinos posibles:
+
+- Otra planilla.
+- Un CSV limpio.
+- Una base de datos.
+- Un data warehouse.
+- Un data lake.
+- Un dashboard.
+- Una tabla analítica.
+- Un sistema de reportes.
+
+---
+
+Ejemplo:
+
+```text
+ventas_limpias.csv
+ventas_limpias.parquet
+tabla ventas_analiticas en PostgreSQL
+tabla en BigQuery
+directorio en un data lake
+```
+
+---
+
+##  Extracción y consolidación desde diversas fuentes
+
+Consolidar significa juntar datos dispersos en una vista coherente.
+
+Ejemplo:
+
+```text
+ventas.csv
+clientes.csv
+productos.csv
+```
+
+Cada archivo por separado dice algo parcial.
+
+---
+
+Al consolidarlos:
+
+```{mermaid}
+flowchart LR
+    A[(ventas.csv)] --> D[Dataset integrado]
+    B[(clientes.csv)] --> D
+    C[(productos.csv)] --> D
+```
+
+podemos responder preguntas más ricas:
+
+- ¿Qué compró cada cliente?
+- ¿Desde qué ciudad?
+- ¿Qué categoría de producto?
+- ¿Cuál fue el total?
+- ¿Qué productos se venden juntos?
+
+---
+
+### Problemas típicos al consolidar
+
+- Claves que no coinciden.
+- IDs faltantes.
+- Duplicados.
+- Nombres escritos de varias maneras.
+- Fechas en formatos distintos.
+- Diferentes granularidades.
+
+---
+
+Ejemplo de granularidad:
+
+```text
+ventas.csv: una fila por venta
+clientes.csv: una fila por cliente
+productos.csv: una fila por producto
+```
+
+Hay que entender qué representa cada fila.
+
+
+---
+
+## Integridad y consistencia de datos
+
+### Integridad
+
+La integridad tiene que ver con que los datos respeten ciertas reglas.
+
+Ejemplos:
+
+- Una venta debe tener fecha.
+- Una cantidad no puede ser negativa.
+- Un precio no puede ser menor que cero.
+- Un cliente_id debe existir en la tabla de clientes.
+- Una fecha de nacimiento no puede estar en el futuro.
+
+---
+
+### Consistencia
+
+La consistencia tiene que ver con que los datos no se contradigan entre sí.
+
+Ejemplos:
+
+- La misma ciudad no debería aparecer como `CABA`, `Capital Federal`, `Buenos Aires CABA` sin criterio.
+- La moneda debería estar claramente definida.
+- Las fechas deberían tener el mismo formato.
+- Las categorías deberían estar normalizadas.
+- Un producto no debería tener dos nombres distintos sin razón.
+
+---
+
+### Ejemplos de reglas
+
+```text
+cantidad > 0
+precio_unitario >= 0
+fecha <= fecha_actual
+cliente_id no nulo
+producto_id existe en productos
+email contiene "@"
+provincia pertenece a lista válida
+```
+
+---

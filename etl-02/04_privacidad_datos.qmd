@@ -1,0 +1,240 @@
+---
+title: "Privacidad y anonimización de datos"
+subtitle: "Clase 1"
+author: "Diplomatura en Ingeniería de Datos e IA - Instituto Balseiro"
+format:
+  revealjs:
+    theme: solarized
+    slide-number: true
+    code-overflow: wrap
+    transition: slide
+    width: 1280
+    height: 720
+    margin: 0.06
+    min-scale: 0.2
+    max-scale: 1.2
+execute:
+  echo: false
+---
+
+## Datos sensibles en proyectos de datos
+
+Todo proyecto de ciencia de datos trabaja con datos reales.
+
+Muchas veces esos datos contienen información sobre **personas**.
+
+- Nombre, DNI, email, teléfono
+- Diagnósticos médicos
+- Historial de compras
+- Ubicación geográfica
+- Opiniones o comportamientos
+
+> ¿Qué obligaciones tenemos sobre esos datos?
+
+---
+
+## Datos personales (PII)
+
+**PII**: Personally Identifiable Information
+
+Información que permite identificar a una persona directa o indirectamente.
+
+| Directos | Indirectos |
+| --- | --- |
+| Nombre y apellido | Código postal + edad + sexo |
+| DNI / CUIL | Combinación de diagnósticos |
+| Email | Historial de movimientos |
+| Teléfono | Dirección IP |
+
+> Tres variables anónimas pueden ser suficientes para re-identificar a una persona.
+
+---
+
+## Marco legal
+
+No es solo una buena práctica: en muchos contextos es **una obligación legal**.
+
+- **Argentina**: Ley 25.326 de Protección de Datos Personales (2000) y sus modificatorias
+- **Europa**: GDPR — Reglamento General de Protección de Datos (2018)
+- **Brasil**: LGPD — Lei Geral de Proteção de Dados (2020)
+
+En el sector salud, educativo y financiero las obligaciones son aún más estrictas.
+
+---
+
+## NDA: el acuerdo de confidencialidad
+
+El **NDA** (Non-Disclosure Agreement) o acuerdo de confidencialidad es un instrumento **legal**, no técnico.
+
+Establece contractualmente que quien accede a los datos:
+
+- No los puede compartir con terceros
+- No los puede usar para fines no autorizados
+- Es responsable legalmente ante una filtración
+
+---
+
+## NDA
+
+El NDA **no protege el dato**: protege la relación entre partes.
+
+```{mermaid}
+flowchart LR
+    A[Organización] -- NDA --> B[Científico de datos]
+    B -- accede a --> C[(Datos sensibles)]
+    C -- filtración --> D[Riesgo legal<br>para ambos]
+```
+
+> Un NDA no reemplaza las medidas técnicas de protección.
+
+---
+
+## Protección técnica: dos enfoques
+
+| | Anonimización | Pseudoanonimización |
+| --- | --- | --- |
+| Definición | Elimina la posibilidad de re-identificación | Reemplaza identificadores por seudónimos |
+| ¿Reversible? | No | Sí (con la clave o función) |
+| Riesgo residual | Muy bajo | Bajo si se gestiona bien la clave |
+| Uso típico | Publicación abierta de datos | Procesamiento interno seguro |
+
+---
+
+## Anonimización
+
+Elimina o altera los datos de forma irreversible.
+
+Técnicas:
+
+- **Supresión**: eliminar la columna completa
+- **Generalización**: reemplazar valor exacto por rango (`34 años` → `30-40`)
+- **Perturbación**: agregar ruido estadístico a los valores
+- **k-anonimato**: garantizar que cada registro sea indistinguible de al menos k-1 otros
+
+---
+
+## Pseudoanonimización
+
+Reemplaza identificadores reales por valores alternativos que no permiten identificar directamente a la persona.
+
+```{python}
+#| echo: true
+#| eval: false
+datos["dni_hash"] = datos["dni"].apply(lambda x: hash(x))
+datos = datos.drop(columns=["dni"])
+```
+
+El valor original puede recuperarse si se conoce la función o la tabla de mapeo.
+
+> La clave o tabla de mapeo debe almacenarse **separada** y con acceso restringido.
+
+---
+
+## Hashing
+
+Una función de hash transforma un valor en una cadena de longitud fija.
+
+```{python}
+#| echo: true
+#| eval: false
+import hashlib
+
+dni = "20345678"
+hashlib.sha256(dni.encode()).hexdigest()
+# → "3b4c1d9f2a..."
+```
+
+Propiedades:
+
+- Determinista: mismo input → mismo output
+- No reversible (idealmente)
+- Pequeños cambios en el input producen outputs completamente distintos
+
+---
+
+## Hashing: algoritmos comunes
+
+| Algoritmo | Longitud | Uso recomendado |
+| --- | --- | --- |
+| MD5 | 128 bits | No recomendado para datos sensibles |
+| SHA-256 | 256 bits | Válido para pseudoanonimización |
+| SHA-512 | 512 bits | Mayor seguridad |
+| bcrypt | Variable | Contraseñas (lento por diseño) |
+
+> MD5 y SHA-1 tienen colisiones conocidas. Para datos sensibles usar al menos SHA-256.
+
+---
+
+## El problema del hash sin sal
+
+Si el espacio de valores es pequeño, el hash es reversible por **fuerza bruta**.
+
+```{python}
+#| echo: true
+#| eval: false
+# Un atacante puede precomputar todos los DNI posibles:
+for dni in range(10_000_000, 99_999_999):
+    tabla[hashlib.sha256(str(dni).encode()).hexdigest()] = dni
+```
+
+Los DNI argentinos son ~90 millones de valores: reversible en minutos.
+
+---
+
+## Salting
+
+Agregar un valor aleatorio y secreto (**sal**) antes de hashear.
+
+```{python}
+#| echo: true
+#| eval: false
+import hashlib, secrets
+
+sal = secrets.token_hex(16)  # valor secreto por registro o global
+dato = "20345678"
+hash_salado = hashlib.sha256((sal + dato).encode()).hexdigest()
+```
+
+- Sin la sal, el hash no es reversible
+- La sal debe guardarse con el mismo cuidado que una contraseña
+
+---
+
+## Flujo completo
+
+```{mermaid}
+flowchart LR
+    A[Dato original<br>DNI, email, nombre] --> B[Aplicar salt + hash]
+    B --> C[Dato pseudoanonimizado
+    en base analítica]
+    A --> D[(Tabla de mapeo<br>acceso restringido)]
+    D -. solo si necesario .-> E[Re-identificación<br>autorizada]
+```
+
+---
+
+## Buenas prácticas
+
+- Nunca guardar datos sensibles en texto plano en repos de código
+- Separar la tabla de mapeo de la base analítica
+- Aplicar el principio de **mínimo privilegio**: acceso solo a quien lo necesita
+- Documentar qué columnas fueron anonimizadas y con qué método
+- En ETL: anonimizar lo antes posible en el pipeline (capa Bronze o entrada)
+
+---
+
+## Para pensar
+
+- ¿Qué columnas de un dataset de turnos médicos son PII?
+- ¿Qué pasa si hacemos join de un dataset anonimizado con otro que no lo está?
+- ¿Cuándo conviene anonimizar y cuándo pseudoanonimizar?
+- ¿Qué riesgos hay en publicar datos de una escuela con nombre, año y nota?
+
+---
+
+## Cierre
+
+Trabajar con datos de personas implica una responsabilidad técnica **y** ética.
+
+> Anonimizar no es solo cumplir la ley: es parte del contrato de confianza con quienes generaron los datos.
+

@@ -1,0 +1,275 @@
+---
+title: "Dónde viven los datos"
+subtitle: "Clase 4"
+author: "Diplomatura en Ingeniería de Datos e IA - Instituto Balseiro"
+execute:
+  echo: false
+---
+
+## ¿Dónde viven los datos?
+
+No todos los datos son iguales. Tampoco todos los accesos tienen el mismo propósito.
+
+- Una base de datos que procesa las ventas del día a día tiene requisitos muy distintos a una que responde preguntas históricas complejas.
+- El tipo de almacenamiento que elijamos afecta la **velocidad**, el **costo** y la **calidad del análisis**.
+
+---
+
+## Dos modos de usar los datos
+
+```{mermaid}
+flowchart LR
+    A[Registrar operaciones] --> B[OLTP]
+    C[Analizar grandes volúmenes] --> D[OLAP]
+```
+
+---
+
+## OLTP vs OLAP
+
+| | OLTP | OLAP |
+| --- | --- | --- |
+| Significado | Online Transaction Processing | Online Analytical Processing |
+| Propósito | Registrar operaciones | Analizar grandes volúmenes |
+| Tipo de consulta | Muchas, cortas, frecuentes | Pocas, largas, complejas |
+| Granularidad | Registros individuales | Agregados y resúmenes |
+| Ejemplo | Caja de supermercado | Reporte de ventas anuales por región |
+
+---
+
+## OLTP vs OLAP
+
+Las bases de datos transaccionales (OLTP) están optimizadas para escribir y leer registros individuales rápidamente.
+
+Las bases analíticas (OLAP) están optimizadas para recorrer millones de filas y calcular agregados.
+
+> Usar una base OLTP para análisis histórico es posible, pero lento, costoso y riesgoso para el sistema operativo.
+
+---
+
+## Data Warehouse
+
+El almacén de datos centralizado.
+
+- Repositorio **estructurado y limpio**, orientado al análisis
+- Los datos llegan a través de procesos ETL
+- Esquema definido con anterioridad: **schema on write**
+- Datos históricos (meses, años)
+- Alta confiabilidad y calidad garantizada
+
+Ejemplos: Amazon Redshift, Google BigQuery, Snowflake
+
+---
+
+## Data Warehouse
+
+```{mermaid}
+flowchart LR
+    A[Ventas] --> ETL[ETL]
+    B[RRHH] --> ETL
+    C[Logística] --> ETL
+    ETL --> DW[(Data Warehouse)]
+    DW --> R[Reportes]
+    DW --> BI[Dashboards]
+```
+
+---
+
+## Data Mart
+
+Un Data Mart es un subconjunto del Data Warehouse orientado a un área específica.
+
+- Marketing
+- Finanzas
+- Recursos Humanos
+
+Ventajas:
+
+- Más rápido de consultar
+- Más fácil de entender para el área
+- Menor costo que construir y mantener un DW completo
+
+---
+
+## Data Mart
+
+```{mermaid}
+flowchart LR
+    DW[(Data Warehouse)] --> M[Data Mart<br>Marketing]
+    DW --> F[Data Mart<br>Finanzas]
+    DW --> H[Data Mart<br>RRHH]
+```
+
+Riesgo: si los marts no están bien gobernados, pueden aparecer **inconsistencias** entre áreas.
+
+> ¿Marketing y Finanzas calculan diferente la cantidad de clientes activos?
+
+---
+
+## Data Lake
+
+El lago de datos.
+
+- Almacena datos **en crudo**, sin transformar
+- Acepta **cualquier formato**: CSV, JSON, imágenes, audio, logs, texto libre
+- Los datos se estructuran **cuando se consultan**: **schema on read**
+- Escalable y de bajo costo (generalmente almacenamiento en la nube)
+
+Ejemplos: Amazon S3, Azure Data Lake Storage, Google Cloud Storage
+
+---
+
+## Data Lake
+
+```{mermaid}
+flowchart LR
+    CSV[CSV] --> L[(Data Lake)]
+    JSON[JSON] --> L
+    IMG[Imágenes] --> L
+    LOG[Logs] --> L
+    L --> AN[Análisis exploratorio]
+    L --> ML[Machine Learning]
+    L --> ETL2[ETL hacia DW]
+```
+
+---
+
+## Data Lake
+
+Ideal cuando:
+
+- Se quiere guardar todo antes de saber qué usar
+- Se necesita entrenar modelos con datos no estructurados
+- El volumen es muy grande y el costo importa
+
+---
+
+## Data Swamp
+
+Sin una buena gobernanza, el Data Lake se convierte en un **pantano de datos**.
+
+- Nadie sabe qué hay guardado
+- No hay documentación de los archivos
+- Los datos están desactualizados o sin origen claro
+- Nadie confía en los datos
+
+> Un Data Lake sin gobernanza es peor que no tener nada: da una falsa sensación de que los datos están disponibles.
+
+---
+
+## Data Lakehouse
+
+El híbrido moderno: combina lo mejor del Data Lake y del Data Warehouse.
+
+| | Data Lake | Data Warehouse | **Lakehouse** |
+| --- | --- | --- | --- |
+| Formatos | Todos | Solo estructurado | **Todos** |
+| Costo de almacenamiento | Bajo | Alto | **Bajo** |
+| Calidad de datos | Baja | Alta | **Alta** |
+| ML/IA nativo | Sí | No | **Sí** |
+| Transacciones ACID | No | Sí | **Sí** |
+
+---
+
+## ¿Qué significa ACID?
+
+ACID es una forma de describir qué tan confiables son las transacciones de una base de datos.
+
+- **Atomicidad** (*Atomicity*): una operación se completa entera o no se aplica nada.
+- **Consistencia** (*Consistency*): los datos quedan en un estado válido después de cada operación.
+- **Aislamiento** (*Isolation*): varias operaciones simultáneas no se pisan entre sí.
+- **Durabilidad** (*Durability*): una vez confirmado el cambio, no se pierde aunque falle el sistema.
+
+Ejemplo: si una compra descuenta stock y registra el pago, no queremos que solo ocurra una de las dos cosas. Con transacciones ACID, la compra se guarda completa o se deshace completa.
+
+---
+
+## Data Lakehouse
+
+Tecnologías:
+
+- **Delta Lake** (Databricks)
+- **Apache Iceberg**
+- **Apache Hudi**
+
+Permiten aplicar control de versiones, transacciones y validaciones sobre archivos en almacenamiento barato (S3, GCS).
+
+---
+
+## Arquitectura medallón
+
+Databricks popularizó una forma de organizar los datos dentro de un Lakehouse en tres capas:
+
+```{mermaid}
+flowchart LR
+    B[(Bronze<br>Datos crudos)] --> S[(Silver<br>Datos limpios)] --> G[(Gold<br>Datos de negocio)]
+```
+
+---
+
+## Arquitectura medallón
+
+| Capa | Contenido | Equivalente |
+| --- | --- | --- |
+| **Bronze** | Datos tal como llegan de la fuente, sin modificar | Data Lake (raw) |
+| **Silver** | Datos limpios, validados y enriquecidos | Staging / DW intermedio |
+| **Gold** | Agregados y métricas listos para consumo | Data Mart |
+
+Cada capa agrega **calidad y confianza**, pero reduce **volumen y detalle**.
+
+---
+
+## Arquitectura medallón
+
+Ventajas:
+
+- Se puede **reprocesar** desde Bronze si hay errores en capas superiores
+- Cada capa tiene una responsabilidad clara
+- Facilita la **gobernanza**: se sabe exactamente qué fue transformado y cuándo
+
+> El dato nunca se borra: siempre existe la versión original en Bronze.
+
+---
+
+## El paisaje completo
+
+```{mermaid}
+flowchart TD
+    SRC[Fuentes de datos] --> L[(Data Lake<br>Todo en crudo)]
+    L --> ETL[ETL / Transformación]
+    ETL --> DW[(Data Warehouse<br>Estructurado y limpio)]
+    DW --> DM[Data Mart<br>Por área]
+    DW --> BI[Reportes / BI]
+    L --> ML[ML / IA<br>Datos no estructurados]
+    L --> LH[(Lakehouse<br>Híbrido)]
+    LH --> BI
+    LH --> ML
+```
+
+---
+
+## ¿Cuándo usar cada uno?
+
+| Situación | Recomendación |
+| --- | --- |
+| Sistema transaccional (ventas, usuarios) | Base de datos OLTP |
+| Reportes y dashboards históricos | Data Warehouse |
+| Un área necesita sus propios reportes | Data Mart |
+| Guardar todo antes de saber qué usar | Data Lake |
+| ML sobre datos variados + análisis estructurado | Lakehouse |
+
+
+---
+
+## Cierre
+
+El dato viaja por distintas capas antes de ser útil.
+
+```{mermaid}
+flowchart LR
+    O[Operación] --> L[Lake]
+    L --> W[Warehouse]
+    W --> A[Análisis]
+```
+
+> No existe el almacenamiento perfecto: existe el almacenamiento **adecuado al problema**.
